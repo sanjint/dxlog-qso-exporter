@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: User Guide & Documentation
+    url: https://github.com/sanjint/dxlog-qso-exporter/blob/main/docs/user-guide.md
+    about: Read the user guide for step-by-step instructions and troubleshooting.
+  - name: Security & Vulnerability Reporting
+    url: https://github.com/sanjint/dxlog-qso-exporter/security/policy
+    about: Report security vulnerabilities privately.

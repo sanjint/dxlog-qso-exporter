@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    env:
+      CI: true
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore packages
+        run: dotnet restore .\DxLogQsoExporter.sln -p:Platform=x64
+
+      - name: Verify code formatting
+        run: dotnet format .\DxLogQsoExporter.sln --verify-no-changes --no-restore
+
+      - name: Build x64 Release
+        run: dotnet build .\DxLogQsoExporter.sln --configuration Release -p:Platform=x64 --no-restore
+
+      - name: Run tests
+        run: dotnet test .\DxLogQsoExporter.sln --configuration Release -p:Platform=x64 --no-build --no-restore --logger trx

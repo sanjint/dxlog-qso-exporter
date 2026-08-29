@@ -1,0 +1,118 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-package-release:
+    runs-on: windows-latest
+    env:
+      CI: true
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Parse tag version
+        id: version
+        shell: pwsh
+        run: |
+          $rawTag = '${{ github.ref_name }}'
+          $ver = $rawTag.TrimStart('v')
+          if ($ver -notmatch '^\d+\.\d+\.\d+') {
+            throw "Tag $rawTag does not follow semantic versioning (vX.Y.Z)"
+          }
+          $semver = $Matches[0]
+          $assemblyVer = "$semver.0"
+          "version=$ver" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "assembly_version=$assemblyVer" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Restore packages
+        run: dotnet restore .\DxLogQsoExporter.sln -p:Platform=x64
+
+      - name: Build x64 Release
+        run: >-
+          dotnet build .\DxLogQsoExporter.sln --configuration Release -p:Platform=x64 --no-restore
+          -p:Version=${{ steps.version.outputs.version }}
+          -p:AssemblyVersion=${{ steps.version.outputs.assembly_version }}
+          -p:FileVersion=${{ steps.version.outputs.assembly_version }}
+          -p:InformationalVersion=${{ steps.version.outputs.version }}
+
+      - name: Run tests
+        run: dotnet test .\DxLogQsoExporter.sln --configuration Release -p:Platform=x64 --no-build --no-restore --logger trx
+
+      - name: Stage portable application
+        id: package
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          $buildOutput = Join-Path $env:GITHUB_WORKSPACE 'src\DxLogQsoExporter\bin\x64\Release\net48'
+          $stage = Join-Path $env:RUNNER_TEMP 'dxlog-qso-exporter-stage'
+          $zip = Join-Path $env:RUNNER_TEMP ("DxLogQsoExporter-{0}-win-x64.zip" -f $env:RELEASE_TAG)
+          if (Test-Path $stage) {
+            Remove-Item $stage -Recurse -Force
+          }
+          New-Item $stage -ItemType Directory -Force | Out-Null
+          Copy-Item (Join-Path $buildOutput '*') $stage -Recurse -Force
+          foreach ($file in @('README.md', 'LICENSE', 'THIRD-PARTY-NOTICES.md', 'CHANGELOG.md')) {
+            Copy-Item (Join-Path $env:GITHUB_WORKSPACE $file) $stage -Force
+          }
+          $nativeSqlite = Join-Path $stage 'x64\SQLite.Interop.dll'
+          if (-not (Test-Path $nativeSqlite)) {
+            throw "Expected native SQLite runtime was not staged at $nativeSqlite"
+          }
+          $stagedConfig = Join-Path $stage 'DxLogQsoExporter.exe.config'
+          if (-not (Test-Path $stagedConfig)) {
+            throw "The application configuration file was not staged."
+          }
+          if (Test-Path $zip) {
+            Remove-Item $zip -Force
+          }
+          Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $zip
+          $hash = (Get-FileHash -Path $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          $shaFile = "$zip.sha256"
+          "$hash *$((Get-Item $zip).Name)" | Out-File -FilePath $shaFile -Encoding ascii
+          "stage=$stage" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "zip=$zip" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "sha256=$shaFile" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Smoke-test staged executable
+        shell: pwsh
+        env:
+          STAGE: ${{ steps.package.outputs.stage }}
+        run: |
+          $executable = Join-Path $env:STAGE 'DxLogQsoExporter.exe'
+          $process = Start-Process -FilePath $executable -WorkingDirectory $env:STAGE -PassThru
+          if (-not $process.WaitForInputIdle(10000)) {
+            if (-not $process.HasExited) {
+              $process.Kill()
+              $process.WaitForExit()
+            }
+            throw 'The staged executable did not become idle.'
+          }
+          if ($process.HasExited) {
+            throw "The staged executable exited with code $($process.ExitCode)."
+          }
+          $process.CloseMainWindow()
+          if (-not $process.WaitForExit(5000)) {
+            $process.Kill()
+            $process.WaitForExit()
+          }
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ${{ steps.package.outputs.zip }}
+            ${{ steps.package.outputs.sha256 }}
+          generate_release_notes: true

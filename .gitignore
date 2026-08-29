@@ -1,0 +1,34 @@
+# Visual Studio user and workspace files
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build output
+[Bb]in/
+[Oo]bj/
+artifacts/
+publish/
+
+# Test results and coverage
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+coverage/
+
+# NuGet packages
+*.nupkg
+*.snupkg
+packages/
+
+# Windows files
+[Tt]humbs.db
+[Dd]esktop.ini
+
+# Log databases and generated output
+*.dxn
+*.partial
+_export-report_*.txt
+*_QSO_Audio/

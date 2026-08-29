@@ -1,0 +1,59 @@
+name: Bug Report
+description: Report a defect, error, or unexpected behavior in DXLog QSO Exporter
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue!
+        
+        > [!IMPORTANT]
+        > **Privacy Reminder:** Do NOT attach proprietary station `.dxn` databases or sensitive contest recordings. Please use synthetic data or ensure any shared reports have personal paths and identifying details redacted.
+
+  - type: input
+    id: version
+    attributes:
+      label: Application Version
+      description: What version of DXLog QSO Exporter are you running (e.g., v1.0.0)?
+      placeholder: v1.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating System
+      description: Which Windows version and architecture (e.g., Windows 11 23H2 x64)?
+      placeholder: Windows 11 x64
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the Bug
+      description: A clear and concise description of what happened and what you expected.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to reproduce the issue.
+      placeholder: |
+        1. Select .dxn log file '...'
+        2. Select MP3 recording directory '...'
+        3. Click 'Export'
+        4. Observe error dialog '...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Export Report / Error Details (if applicable)
+      description: Paste relevant sections of the export report or error message. (Remember to redact any private information).
+      render: text
+
