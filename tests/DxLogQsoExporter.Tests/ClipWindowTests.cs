@@ -69,7 +69,7 @@ namespace DxLogQsoExporter.Tests
             var bytes = SyntheticMp3.Create(3);
             var index = BuildIndex(3);
 
-            var exception = Assert.ThrowsException<ClipWindowException>(
+            var exception = Assert.ThrowsExactly<ClipWindowException>(
                 () => ClipWindow.Create(index, bytes.LongLength, bytes.LongLength, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2)));
 
             Assert.AreEqual(ClipWindowFailureKind.OutOfRangePosition, exception.Kind);

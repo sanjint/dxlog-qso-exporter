@@ -6,17 +6,15 @@
     <RootNamespace>DxLogQsoExporter</RootNamespace>
     <AssemblyName>DxLogQsoExporter</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>app.ico</ApplicationIcon>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <Version>1.0.0</Version>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
     <InformationalVersion>1.0.0</InformationalVersion>
-    <Authors>DXLog QSO Exporter contributors</Authors>
-    <Company>DXLog QSO Exporter contributors</Company>
+    <Authors>Sanjin Tajić</Authors>
     <Product>DXLog QSO Exporter</Product>
     <Description>MP3 clip exporter for saved DXLog QSO recording positions, with optional radio channel extraction.</Description>
-    <Copyright>Copyright (c) 2026 DXLog QSO Exporter contributors</Copyright>
+    <Copyright>Copyright (c) 2026 Sanjin Tajić</Copyright>
   </PropertyGroup>
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">

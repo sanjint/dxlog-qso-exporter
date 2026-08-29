@@ -105,7 +105,7 @@ namespace DxLogQsoExporter.Tests
                 var path = workspace.GetPath("old.dxn");
                 SyntheticDxn.Create(path, Array.Empty<SyntheticDxn.Row>(), schemaVersion: 0);
 
-                var exception = Assert.ThrowsException<DxnReadException>(
+                var exception = Assert.ThrowsExactly<DxnReadException>(
                     () => new DxnLogReader().Read(path, CancellationToken.None));
 
                 Assert.AreEqual(DxnReadFailureKind.UnsupportedSchema, exception.Kind);
@@ -120,7 +120,7 @@ namespace DxLogQsoExporter.Tests
                 var path = workspace.GetPath("missing-table.dxn");
                 CreateDatabase(path, "CREATE TABLE Other (Value INTEGER);");
 
-                var exception = Assert.ThrowsException<DxnReadException>(
+                var exception = Assert.ThrowsExactly<DxnReadException>(
                     () => new DxnLogReader().Read(path, CancellationToken.None));
 
                 Assert.AreEqual(DxnReadFailureKind.InvalidSchema, exception.Kind);
@@ -135,7 +135,7 @@ namespace DxLogQsoExporter.Tests
                 var path = workspace.GetPath("missing-column.dxn");
                 CreateDatabase(path, "CREATE TABLE QSO (QSOID INTEGER, QSOTime TEXT, Call TEXT, Band TEXT, XQSO INTEGER, RecordingFile INTEGER, RecordingPosition INTEGER);");
 
-                var exception = Assert.ThrowsException<DxnReadException>(
+                var exception = Assert.ThrowsExactly<DxnReadException>(
                     () => new DxnLogReader().Read(path, CancellationToken.None));
 
                 Assert.AreEqual(DxnReadFailureKind.InvalidSchema, exception.Kind);
@@ -184,7 +184,7 @@ namespace DxLogQsoExporter.Tests
                     command.ExecuteNonQuery();
                 }
 
-                var exception = Assert.ThrowsException<DxnReadException>(
+                var exception = Assert.ThrowsExactly<DxnReadException>(
                     () => new DxnLogReader().Read(path, CancellationToken.None));
 
                 Assert.AreEqual(DxnReadFailureKind.InvalidData, exception.Kind);
@@ -215,7 +215,7 @@ namespace DxLogQsoExporter.Tests
 
                 using (var exclusiveFile = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
                 {
-                    var exception = Assert.ThrowsException<DxnReadException>(
+                    var exception = Assert.ThrowsExactly<DxnReadException>(
                         () => new DxnLogReader().Read(path, CancellationToken.None));
 
                     Assert.IsTrue(

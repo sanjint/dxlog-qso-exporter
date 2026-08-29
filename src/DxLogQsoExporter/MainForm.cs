@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -15,6 +16,8 @@ namespace DxLogQsoExporter
     {
         private readonly ExportCoordinator _exportCoordinator;
         private CancellationTokenSource? _cancellationTokenSource;
+        private bool _recordingFolderIsAutomatic = true;
+        private bool _settingRecordingFolder;
         private bool _outputPathIsAutomatic = true;
         private bool _settingOutputPath;
 
@@ -40,6 +43,7 @@ namespace DxLogQsoExporter
                 }
 
                 _logPathTextBox.Text = dialog.FileName;
+                SetAutomaticRecordingFolder();
                 SetAutomaticOutputPath();
             }
         }
@@ -50,8 +54,14 @@ namespace DxLogQsoExporter
             {
                 dialog.Description = "Select the folder containing DXLog MP3 recordings.";
                 dialog.ShowNewFolderButton = false;
+                if (!string.IsNullOrWhiteSpace(_recordingFolderTextBox.Text) && Directory.Exists(_recordingFolderTextBox.Text.Trim()))
+                {
+                    dialog.SelectedPath = _recordingFolderTextBox.Text.Trim();
+                }
+
                 if (dialog.ShowDialog(this) == DialogResult.OK)
                 {
+                    _recordingFolderIsAutomatic = false;
                     _recordingFolderTextBox.Text = dialog.SelectedPath;
                 }
             }
@@ -63,6 +73,11 @@ namespace DxLogQsoExporter
             {
                 dialog.Description = "Select the folder for exported QSO clips.";
                 dialog.ShowNewFolderButton = true;
+                if (!string.IsNullOrWhiteSpace(_outputFolderTextBox.Text) && Directory.Exists(_outputFolderTextBox.Text.Trim()))
+                {
+                    dialog.SelectedPath = _outputFolderTextBox.Text.Trim();
+                }
+
                 if (dialog.ShowDialog(this) == DialogResult.OK)
                 {
                     _outputPathIsAutomatic = false;
@@ -73,9 +88,24 @@ namespace DxLogQsoExporter
 
         private void LogPathTextBox_TextChanged(object? sender, EventArgs e)
         {
+            if (_recordingFolderIsAutomatic && !_settingRecordingFolder)
+            {
+                SetAutomaticRecordingFolder();
+            }
+
             if (_outputPathIsAutomatic && !_settingOutputPath)
             {
                 SetAutomaticOutputPath();
+            }
+
+            UpdateValidation();
+        }
+
+        private void RecordingFolderTextBox_TextChanged(object? sender, EventArgs e)
+        {
+            if (!_settingRecordingFolder)
+            {
+                _recordingFolderIsAutomatic = false;
             }
 
             UpdateValidation();
@@ -200,6 +230,35 @@ namespace DxLogQsoExporter
             _cancellationTokenSource.Cancel();
             e.Cancel = true;
             _statusLabel.Text = "Cancelling export. Close the window again when it finishes.";
+        }
+
+        private void SetAutomaticRecordingFolder()
+        {
+            var logPath = _logPathTextBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(logPath))
+            {
+                return;
+            }
+
+            try
+            {
+                var fullPath = Path.GetFullPath(logPath);
+                var directory = Path.GetDirectoryName(fullPath);
+                if (string.IsNullOrWhiteSpace(directory) || !Directory.Exists(directory))
+                {
+                    return;
+                }
+
+                if (Directory.EnumerateFiles(directory, "*.mp3", SearchOption.TopDirectoryOnly).Any())
+                {
+                    _settingRecordingFolder = true;
+                    _recordingFolderTextBox.Text = directory;
+                    _settingRecordingFolder = false;
+                }
+            }
+            catch (Exception exception) when (exception is ArgumentException || exception is IOException || exception is UnauthorizedAccessException)
+            {
+            }
         }
 
         private void SetAutomaticOutputPath()

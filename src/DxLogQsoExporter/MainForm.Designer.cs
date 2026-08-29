@@ -154,6 +154,7 @@ namespace DxLogQsoExporter
             this._recordingFolderTextBox.Name = "_recordingFolderTextBox";
             this._recordingFolderTextBox.Size = new System.Drawing.Size(440, 23);
             this._recordingFolderTextBox.TabIndex = 4;
+            this._recordingFolderTextBox.TextChanged += new System.EventHandler(this.RecordingFolderTextBox_TextChanged);
             // 
             // _recordingFolderLabel
             // 

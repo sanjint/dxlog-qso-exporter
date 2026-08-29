@@ -74,7 +74,7 @@ namespace DxLogQsoExporter.Tests
                 File.WriteAllBytes(outputPath, new byte[] { 7, 8, 9 });
                 var window = ClipWindow.Create(index, new FileInfo(recordingPath).Length, index.Frames[1].FileOffset, TimeSpan.Zero, TimeSpan.FromMilliseconds(50));
 
-                var exception = Assert.ThrowsException<Mp3ClipWriteException>(
+                var exception = Assert.ThrowsExactly<Mp3ClipWriteException>(
                     () => new Mp3ClipWriter().Write(source, window, outputPath, CancellationToken.None));
 
                 Assert.AreEqual(Mp3ClipWriteFailureKind.OutputAlreadyExists, exception.Kind);
@@ -104,7 +104,7 @@ namespace DxLogQsoExporter.Tests
                 var window = ClipWindow.Create(index, source.Fingerprint.Length, index.Frames[1].FileOffset, TimeSpan.Zero, TimeSpan.FromMilliseconds(50));
                 var outputPath = workspace.GetPath("changed.mp3");
 
-                var exception = Assert.ThrowsException<Mp3ClipWriteException>(
+                var exception = Assert.ThrowsExactly<Mp3ClipWriteException>(
                     () => new Mp3ClipWriter().Write(source, window, outputPath, CancellationToken.None));
 
                 Assert.AreEqual(Mp3ClipWriteFailureKind.SourceChanged, exception.Kind);
@@ -135,7 +135,7 @@ namespace DxLogQsoExporter.Tests
                 var outputPath = workspace.GetPath("cancelled.mp3");
                 cancellation.Cancel();
 
-                Assert.ThrowsException<OperationCanceledException>(
+                Assert.ThrowsExactly<OperationCanceledException>(
                     () => new Mp3ClipWriter().Write(source, window, outputPath, cancellation.Token));
                 Assert.IsFalse(File.Exists(outputPath));
                 Assert.IsFalse(File.Exists(outputPath + ".partial"));

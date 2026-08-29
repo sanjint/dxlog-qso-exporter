@@ -117,7 +117,7 @@ namespace DxLogQsoExporter.Tests
             using (var cancellation = new CancellationTokenSource())
             {
                 cancellation.Cancel();
-                Assert.ThrowsException<OperationCanceledException>(
+                Assert.ThrowsExactly<OperationCanceledException>(
                     () => Mp3FrameIndex.Build(source, cancellation.Token));
             }
         }
@@ -145,7 +145,7 @@ namespace DxLogQsoExporter.Tests
         {
             using (var stream = new MemoryStream(bytes))
             {
-                var exception = Assert.ThrowsException<Mp3IndexException>(
+                var exception = Assert.ThrowsExactly<Mp3IndexException>(
                     () => Mp3FrameIndex.Build(stream, CancellationToken.None));
                 Assert.AreEqual(expectedKind, exception.Kind);
             }
