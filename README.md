@@ -4,6 +4,8 @@ DXLog QSO Exporter reads a SQLite-based DXLog `.dxn` log and its MP3 recordings,
 
 For a friendly, step-by-step walkthrough, see the [User Guide](docs/user-guide.md) ([Bosanski](docs/user-guide.bs.md) | [Deutsch](docs/user-guide.de.md)). For supported database schemas and compatibility details, see [Compatibility](docs/compatibility.md).
 
+![DXLog QSO Exporter window](docs/application.png)
+
 ## Requirements
 
 - Windows 10 or Windows 11, x64
