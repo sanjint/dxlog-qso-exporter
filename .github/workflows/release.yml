@@ -28,6 +28,9 @@ jobs:
         run: |
           $rawTag = '${{ github.ref_name }}'
           $ver = $rawTag.TrimStart('v')
+          if ($ver -match '^\d+$') {
+            $ver = "$ver.0.0"
+          }
           if ($ver -notmatch '^\d+\.\d+\.\d+') {
             throw "Tag $rawTag does not follow semantic versioning (vX.Y.Z)"
           }
